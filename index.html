@@ -60,6 +60,19 @@ function joinQueue() {
 function nextOrder() {
   socket.emit("nextOrder");
 }
+  let currentWorker = null;
+
+socket.on("currentWorker", (worker) => {
+  currentWorker = worker;
+
+  const btn = document.getElementById("nextBtn");
+
+  if (worker === user) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+});
 </script>
 
 </body>
