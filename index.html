@@ -1,94 +1,595 @@
 <!DOCTYPE html>
-<html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Հերթ | Queue</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #141416;
+      --surface2: #1c1c20;
+      --border: #2a2a30;
+      --accent: #e8c547;
+      --accent2: #f0d96a;
+      --text: #f0ede6;
+      --text-muted: #7a7880;
+      --red: #e05252;
+      --green: #52c97a;
+      --radius: 14px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Background grid texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,197,71,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,197,71,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(232,197,71,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ──────────────── HEADER ──────────────── */
+    .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 18px;
+      margin-bottom: 20px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .logo-text {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .logo h1 {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .logo h1 span {
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    /* ──────────────── AUTH CARD ──────────────── */
+    #auth {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    #auth h2 {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]::placeholder {
+      color: #3a3a42;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(232,197,71,0.1);
+    }
+
+    /* ──────────────── BUTTONS ──────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0d0d0f;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(232,197,71,0.25);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ──────────────── APP ──────────────── */
+    #app {
+      animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Welcome bar */
+    .welcome-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .welcome-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .welcome-name {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .welcome-role {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #b8961f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: #0d0d0f;
+    }
+
+    /* Action buttons row */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Queue section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .queue-count {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    #queueList {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #queueList li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s;
+      animation: itemIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes itemIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    #queueList li:first-child {
+      border-color: rgba(232,197,71,0.35);
+      background: rgba(232,197,71,0.04);
+    }
+
+    .item-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    #queueList li:first-child .item-number {
+      background: var(--accent);
+      color: #0d0d0f;
+    }
+
+    .item-name {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 15px;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .item-crown {
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    #queueList li:first-child .item-crown {
+      opacity: 1;
+    }
+
+    /* Empty state */
+    .empty-state {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'Noto Serif Armenian', serif;
+    }
+
+    /* Status strip */
+    .status-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-text {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+  </style>
+</head>
 <body>
 
-<div id="auth">
-  <h2>Մուտք</h2>
-  <input id="nameInput" placeholder="Քո անունը">
-  <button onclick="login()">Մտնել</button>
-</div>
+<div class="container">
 
-<div id="app" style="display:none;">
-  <h2 id="welcome"></h2>
+  <!-- LOGO -->
+  <div class="logo">
+    <div class="logo-badge">
+      <span class="logo-dot"></span>
+      <span class="logo-text">Կենդանի հերթ</span>
+    </div>
+    <h1>Հերթ<span>ակ</span></h1>
+  </div>
 
-  <button onclick="joinQueue()">Միանալ հերթին</button>
-  <button id="nextBtn" onclick="nextOrder()" disabled>Հաջորդ պատվեր</button>
+  <!-- AUTH -->
+  <div id="auth">
+    <p class="card-label">Աշխատակցի մուտք</p>
+    <h2>Բարի գալուստ</h2>
+    <div class="input-group">
+      <label>Քո անունը</label>
+      <input id="nameInput" type="text" placeholder="Անի, Արամ...">
+    </div>
+    <button class="btn btn-primary" onclick="login()">Մտնել →</button>
+  </div>
 
-  <ul id="queueList"></ul>
+  <!-- APP -->
+  <div id="app" style="display:none;">
+
+    <!-- Welcome bar -->
+    <div class="welcome-bar">
+      <div class="welcome-info">
+        <span class="welcome-name" id="welcome"></span>
+        <span class="welcome-role">Սպասարկող</span>
+      </div>
+      <div class="avatar" id="avatarEl"></div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-strip">
+      <span class="status-dot"></span>
+      <span class="status-text">Կապակցված է սերվերին</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="joinQueue()">+ Հերթ</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextOrder()" disabled>Հաջորդ ➜</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Queue list -->
+    <div class="section-header">
+      <span class="section-title">Հերթացուցակ</span>
+      <span class="queue-count" id="queueCount">0 հոգի</span>
+    </div>
+
+    <ul id="queueList"></ul>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">☕</div>
+      <p class="empty-text">Հերթը դատարկ է</p>
+    </div>
+
+  </div>
+
 </div>
 
 <script src="https://hert-backend-y1hg.onrender.com/socket.io/socket.io.js"></script>
-
 <script>
 const socket = io("https://hert-backend-y1hg.onrender.com");
-
 let user = localStorage.getItem("user");
 let currentWorker = null;
 
-// INIT
 if (user) showApp();
 
 function login() {
   const name = document.getElementById("nameInput").value.trim();
   if (!name) return;
-
   localStorage.setItem("user", name);
   user = name;
-
   showApp();
 }
 
 function showApp() {
   document.getElementById("auth").style.display = "none";
   document.getElementById("app").style.display = "block";
-  document.getElementById("welcome").innerText = "Բարև, " + user;
+  document.getElementById("welcome").innerText = user;
+  document.getElementById("avatarEl").innerText = user.charAt(0).toUpperCase();
 }
 
-// 🔥 QUEUE UPDATE
 socket.on("queue", (data) => {
   const list = document.getElementById("queueList");
+  const empty = document.getElementById("emptyState");
+  const count = document.getElementById("queueCount");
+
   list.innerHTML = "";
+  count.textContent = data.length + " հոգի";
+
+  if (data.length === 0) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
 
   data.forEach((name, i) => {
     const li = document.createElement("li");
-    li.textContent = (i+1) + ". " + name;
+    li.innerHTML = `
+      <div class="item-number">${i + 1}</div>
+      <span class="item-name">${name}</span>
+      <span class="item-crown">★</span>
+    `;
     list.appendChild(li);
   });
 });
 
-// 🔥 CURRENT WORKER (IMPORTANT)
 socket.on("currentWorker", (worker) => {
   currentWorker = worker;
-
   const btn = document.getElementById("nextBtn");
-
-  if (worker === user) {
-    btn.disabled = false;
-  } else {
-    btn.disabled = true;
-  }
+  btn.disabled = (worker !== user);
 });
 
-// 🔥 ORDER ALERT
 socket.on("order", (worker) => {
   alert("Պատվերը գնաց → " + worker);
 });
 
-// ❌ ERROR
 socket.on("errorMsg", (msg) => {
   alert(msg);
 });
 
-// JOIN
 function joinQueue() {
   socket.emit("joinQueue", user);
 }
 
-// 🔥 FIX → ուղարկում ենք անունը
 function nextOrder() {
   socket.emit("nextOrder", user);
 }
 </script>
-
 </body>
 </html>
