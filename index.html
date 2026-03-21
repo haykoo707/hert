@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Հերթ | Queue</title>
+  <title>Հերթ</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Armenian:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0d0d0f;
+      --bg: #383838;
       --surface: #141416;
       --surface2: #1c1c20;
       --border: #2a2a30;
-      --accent: #e8c547;
-      --accent2: #f0d96a;
+      --accent: #ffffff;
+      --accent2: #ffffff;
       --text: #f0ede6;
-      --text-muted: #7a7880;
+      --text-muted: #c5c5c5;
       --red: #e05252;
       --green: #52c97a;
       --radius: 14px;
@@ -48,8 +48,8 @@
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(232,197,71,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(232,197,71,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
@@ -64,7 +64,7 @@
       transform: translateX(-50%);
       width: 500px;
       height: 300px;
-      background: radial-gradient(ellipse, rgba(232,197,71,0.08) 0%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
       pointer-events: none;
       z-index: 0;
     }
@@ -83,16 +83,7 @@
       margin-bottom: 36px;
     }
 
-    .logo-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 8px 18px;
-      margin-bottom: 20px;
-    }
+   
 
     .logo-dot {
       width: 8px;
@@ -191,7 +182,7 @@
 
     input[type="text"]:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(232,197,71,0.1);
+      box-shadow: 0 0 0 3px rgba(252, 252, 252, 0.1);
     }
 
     /* ──────────────── BUTTONS ──────────────── */
@@ -221,7 +212,7 @@
     .btn-primary:hover {
       background: var(--accent2);
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(232,197,71,0.25);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
     }
 
     .btn-primary:active {
@@ -292,7 +283,7 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), #b8961f);
+      background: linear-gradient(135deg, var(--accent), #e1e1e1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -359,8 +350,8 @@
     }
 
     #queueList li:first-child {
-      border-color: rgba(232,197,71,0.35);
-      background: rgba(232,197,71,0.04);
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(160, 160, 160, 0.04);
     }
 
     .item-number {
@@ -459,14 +450,6 @@
 
 <div class="container">
 
-  <!-- LOGO -->
-  <div class="logo">
-    <div class="logo-badge">
-      <span class="logo-dot"></span>
-      <span class="logo-text">Կենդանի հերթ</span>
-    </div>
-    <h1>Հերթ<span>ակ</span></h1>
-  </div>
 
   <!-- AUTH -->
   <div id="auth">
@@ -486,7 +469,7 @@
     <div class="welcome-bar">
       <div class="welcome-info">
         <span class="welcome-name" id="welcome"></span>
-        <span class="welcome-role">Սպասարկող</span>
+        <span class="welcome-role">Հավաքագրող</span>
       </div>
       <div class="avatar" id="avatarEl"></div>
     </div>
@@ -494,7 +477,7 @@
     <!-- Status -->
     <div class="status-strip">
       <span class="status-dot"></span>
-      <span class="status-text">Կապակցված է սերվերին</span>
+      <span class="status-text">Connected to server</span>
     </div>
 
     <!-- Actions -->
@@ -507,14 +490,14 @@
 
     <!-- Queue list -->
     <div class="section-header">
-      <span class="section-title">Հերթացուցակ</span>
+      <span class="section-title">Հերթականություն</span>
       <span class="queue-count" id="queueCount">0 հոգի</span>
     </div>
 
     <ul id="queueList"></ul>
     <div class="empty-state" id="emptyState">
-      <div class="empty-icon">☕</div>
-      <p class="empty-text">Հերթը դատարկ է</p>
+      <div class="empty-icon">🛒</div>
+      <p class="empty-text">դատարկ է</p>
     </div>
 
   </div>
