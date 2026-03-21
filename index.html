@@ -12,7 +12,7 @@
   <h2 id="welcome"></h2>
 
   <button onclick="joinQueue()">Միանալ հերթին</button>
-  <button id="nextBtn" onclick="nextOrder()">Հաջորդ պատվեր</button>
+  <button id="nextBtn" onclick="nextOrder()" disabled>Հաջորդ պատվեր</button>
 
   <ul id="queueList"></ul>
 </div>
@@ -21,15 +21,20 @@
 
 <script>
 const socket = io("https://hert-backend-y1hg.onrender.com");
-let user = localStorage.getItem("user");
 
+let user = localStorage.getItem("user");
+let currentWorker = null;
+
+// INIT
 if (user) showApp();
 
 function login() {
   const name = document.getElementById("nameInput").value.trim();
   if (!name) return;
+
   localStorage.setItem("user", name);
   user = name;
+
   showApp();
 }
 
@@ -39,9 +44,11 @@ function showApp() {
   document.getElementById("welcome").innerText = "Բարև, " + user;
 }
 
+// 🔥 QUEUE UPDATE
 socket.on("queue", (data) => {
   const list = document.getElementById("queueList");
   list.innerHTML = "";
+
   data.forEach((name, i) => {
     const li = document.createElement("li");
     li.textContent = (i+1) + ". " + name;
@@ -49,19 +56,7 @@ socket.on("queue", (data) => {
   });
 });
 
-socket.on("order", (worker) => {
-  alert("Պատվերը գնաց → " + worker);
-});
-
-function joinQueue() {
-  socket.emit("joinQueue", user);
-}
-
-function nextOrder() {
-  socket.emit("nextOrder");
-}
-  let currentWorker = null;
-
+// 🔥 CURRENT WORKER (IMPORTANT)
 socket.on("currentWorker", (worker) => {
   currentWorker = worker;
 
@@ -73,6 +68,26 @@ socket.on("currentWorker", (worker) => {
     btn.disabled = true;
   }
 });
+
+// 🔥 ORDER ALERT
+socket.on("order", (worker) => {
+  alert("Պատվերը գնաց → " + worker);
+});
+
+// ❌ ERROR
+socket.on("errorMsg", (msg) => {
+  alert(msg);
+});
+
+// JOIN
+function joinQueue() {
+  socket.emit("joinQueue", user);
+}
+
+// 🔥 FIX → ուղարկում ենք անունը
+function nextOrder() {
+  socket.emit("nextOrder", user);
+}
 </script>
 
 </body>
