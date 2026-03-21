@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="auth">
+  <h2>Մուտք</h2>
+  <input id="nameInput" placeholder="Քո անունը">
+  <button onclick="login()">Մտնել</button>
+</div>
+
+<div id="app" style="display:none;">
+  <h2 id="welcome"></h2>
+
+  <button onclick="joinQueue()">Միանալ հերթին</button>
+  <button onclick="nextOrder()">Հաջորդ պատվեր</button>
+
+  <ul id="queueList"></ul>
+</div>
+
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io("http://localhost:3000");
+let user = localStorage.getItem("user");
+
+if (user) showApp();
+
+function login() {
+  const name = document.getElementById("nameInput").value.trim();
+  if (!name) return;
+  localStorage.setItem("user", name);
+  user = name;
+  showApp();
+}
+
+function showApp() {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("welcome").innerText = "Բարև, " + user;
+}
+
+socket.on("queue", (data) => {
+  const list = document.getElementById("queueList");
+  list.innerHTML = "";
+  data.forEach((name, i) => {
+    const li = document.createElement("li");
+    li.textContent = (i+1) + ". " + name;
+    list.appendChild(li);
+  });
+});
+
+socket.on("order", (worker) => {
+  alert("Պատվերը գնաց → " + worker);
+});
+
+function joinQueue() {
+  socket.emit("joinQueue", user);
+}
+
+function nextOrder() {
+  socket.emit("nextOrder");
+}
+</script>
+
+</body>
+</html>
