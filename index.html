@@ -84,6 +84,11 @@
       to   { opacity: 1; transform: translateX(0); }
     }
 
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
     /* ── AUTH ── */
     #auth {
       background: var(--surface);
@@ -157,6 +162,7 @@
       border: none;
       transition: all 0.18s ease;
       width: 100%;
+      cursor: pointer;
     }
 
     .btn-primary { background: var(--accent); color: #0d0d0f; }
@@ -177,8 +183,7 @@
       font-size: 11px;
       padding: 11px 16px;
     }
-    .btn-admin:hover { border-color: var(--orange); background:rgba(38, 255, 0, 0.4); transform: translateY(-1px); }
-
+    
     .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
     /* ── APP ── */
@@ -296,7 +301,6 @@
 
     .divider { height: 1px; background: var(--border); margin: 20px 0; }
 
-    /* ── ADMIN BUTTON AREA ── */
     .admin-section { margin-top: 16px; }
 
     /* ── MODAL OVERLAY ── */
@@ -349,6 +353,7 @@
       border-radius: 6px;
       transition: color 0.2s, background 0.2s;
       font-family: monospace;
+      cursor: pointer;
     }
 
     .modal-close:hover { color: var(--text); background: var(--surface2); }
@@ -418,6 +423,7 @@
       padding: 4px 10px;
       letter-spacing: 0.05em;
       transition: all 0.18s;
+      cursor: pointer;
     }
 
     .worker-remove-btn:hover { background: rgba(224,82,82,0.12); border-color: var(--red); }
@@ -448,7 +454,6 @@
       opacity: 0.6;
     }
 
-    /* ── ADMIN SECTION TITLES ── */
     .admin-section-title {
       font-size: 9px;
       letter-spacing: 0.25em;
@@ -468,7 +473,65 @@
       padding: 16px;
       opacity: 0.6;
     }
-  
+
+    /* ── CUSTOM POPUP (replaces alert / confirm) ── */
+    #popupOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #popupOverlay.open { display: flex; }
+
+    #popupBox {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 26px 22px;
+      width: 100%;
+      max-width: 340px;
+      animation: popIn 0.28s cubic-bezier(0.22,1,0.36,1);
+      text-align: center;
+    }
+
+    #popupIcon {
+      font-size: 28px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    #popupTitle {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    #popupMsg {
+      font-family: 'Noto Serif Armenian', serif;
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    #popupActions {
+      display: flex;
+      gap: 10px;
+    }
+
+    #popupActions .btn {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
@@ -520,7 +583,6 @@
       <p class="empty-text">դատարկ է</p>
     </div>
 
-    <!-- Admin button -->
     <div class="admin-section">
       <div class="divider"></div>
       <button class="btn btn-admin" onclick="openAdminLogin()">⚙ Ադմինի մուտք</button>
@@ -559,17 +621,25 @@
     </div>
     <div class="admin-badge">Admin Access</div>
 
-    <!-- Queue management -->
     <p class="admin-section-title">Հերթ — Կառավարում</p>
     <div class="worker-list" id="adminQueueList">
       <div class="empty-workers">Հերթը դատարկ է</div>
     </div>
 
-    <!-- Timing logs -->
     <p class="admin-section-title">Ժամանակի Գրանցում</p>
     <div class="timing-log" id="timingLog">
       <div class="no-logs">Տվյալ չկա</div>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════ CUSTOM POPUP ═══════════ -->
+<div id="popupOverlay">
+  <div id="popupBox">
+    <span id="popupIcon"></span>
+    <div id="popupTitle"></div>
+    <div id="popupMsg"></div>
+    <div id="popupActions"></div>
   </div>
 </div>
 
@@ -584,9 +654,65 @@ const socket = io("https://hert-backend-y1hg.onrender.com");
 let user = localStorage.getItem("user");
 let currentWorker = null;
 let currentQueue = [];
-let timingData = {}; // sourced from server via "timingData" event
+let timingData = {};
 
 if (user) showApp();
+
+// ─── CUSTOM POPUP ───
+// showPopup({ icon, title, msg, buttons: [{label, style, onClick}] })
+function showPopup({ icon = "", title = "", msg = "", buttons = [] }) {
+  document.getElementById("popupIcon").textContent = icon;
+  document.getElementById("popupTitle").textContent = title;
+  document.getElementById("popupMsg").textContent = msg;
+
+  const actionsEl = document.getElementById("popupActions");
+  actionsEl.innerHTML = "";
+
+  buttons.forEach(b => {
+    const btn = document.createElement("button");
+    btn.className = "btn " + (b.style || "btn-secondary");
+    btn.textContent = b.label;
+    btn.onclick = () => {
+      closePopup();
+      if (b.onClick) b.onClick();
+    };
+    actionsEl.appendChild(btn);
+  });
+
+  document.getElementById("popupOverlay").classList.add("open");
+}
+
+function closePopup() {
+  document.getElementById("popupOverlay").classList.remove("open");
+}
+
+// Close popup on overlay click
+document.getElementById("popupOverlay").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closePopup();
+});
+
+// Replaces alert()
+function showAlert(msg, icon = "ℹ️", title = "Ծանուցում") {
+  showPopup({
+    icon,
+    title,
+    msg,
+    buttons: [{ label: "Լավ", style: "btn-primary", onClick: null }]
+  });
+}
+
+// Replaces confirm()
+function showConfirm(msg, title, icon, onConfirm) {
+  showPopup({
+    icon,
+    title,
+    msg,
+    buttons: [
+      { label: "Չեղարկել", style: "btn-secondary", onClick: null },
+      { label: "Հաստատել", style: "btn-danger", onClick: onConfirm }
+    ]
+  });
+}
 
 // ─── AUTH ───
 function login() {
@@ -618,7 +744,6 @@ socket.on("currentWorker", (worker) => {
   document.getElementById("nextBtn").disabled = (worker !== user);
 });
 
-// timing data always comes from server
 socket.on("timingData", (data) => {
   timingData = data;
   if (document.getElementById("adminPanelModal").classList.contains("open")) {
@@ -627,10 +752,12 @@ socket.on("timingData", (data) => {
 });
 
 socket.on("order", (worker) => {
-  alert("Պատվերը գնաց → " + worker);
+  showAlert("Պատվեր գնաց → " + worker, "✅", "");
 });
 
-socket.on("errorMsg", (msg) => { alert(msg); });
+socket.on("errorMsg", (msg) => {
+  showAlert(msg, "❌", "Սխալ");
+});
 
 // ─── QUEUE ACTIONS ───
 function joinQueue() {
@@ -691,7 +818,6 @@ function doAdminLogin() {
 function openAdminPanel() {
   document.getElementById("adminPanelModal").classList.add("open");
   renderAdminQueue(currentQueue);
-  // request fresh timing data from server
   socket.emit("adminGetTiming", { adminUser: ADMIN_USER, adminPass: ADMIN_PASS });
   renderTimingLog();
 }
@@ -724,8 +850,14 @@ function renderAdminQueue(data) {
 }
 
 function adminRemove(name) {
-  if (!confirm(`Հեռացնե՞լ "${name}"-ին հերթից։`)) return;
-  socket.emit("adminRemove", { worker: name, adminUser: ADMIN_USER, adminPass: ADMIN_PASS });
+  showConfirm(
+    `«${name}»-ին հեռացնել հերթից։`,
+    "",
+    "⚠️",
+    () => {
+      socket.emit("adminRemove", { worker: name, adminUser: ADMIN_USER, adminPass: ADMIN_PASS });
+    }
+  );
 }
 
 // ─── TIMING LOG ───
@@ -775,7 +907,6 @@ function calcGap(t1, t2) {
 document.getElementById("nameInput").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 document.getElementById("adminPass").addEventListener("keydown", e => { if (e.key === "Enter") doAdminLogin(); });
 
-// Close modals on overlay click
 document.getElementById("adminLoginModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeAdminLogin(); });
 document.getElementById("adminPanelModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeAdminPanel(); });
 </script>
